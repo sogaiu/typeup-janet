@@ -83,6 +83,9 @@ close bracket, author and author close bracket must be on the same line
 
 Nested quotes are not supported, lol. tone down your recursive flamebait
 
+/italic/ and
+//
+
 # titles
 
 + hash is good, just as in markdown!
@@ -136,6 +139,10 @@ header,row,items
 items,etc,  etc
 ]
 ```
+
+# hr
+
+----
 
 # custom blocks
 
