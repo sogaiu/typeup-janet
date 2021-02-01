@@ -2,36 +2,44 @@
 
 (import "./example")
 
-(defn blockquote [s] (do
-                       (string "<blockquote>" (string/trim s) "</blockquote>")))
-(defn title [hashes s] (do
-                         (string/format "<h%d>%s</h%d>" (length hashes) (string/trim s) (length hashes))))
+(defn blockquote [s] (string "<blockquote>" (string/trim s) "</blockquote>"))
 
-(defn bold [s] (do
-                 (string/format "<b>%s</b>" s)))
+(defn title [hashes s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim s) (length hashes)))
+
+(defn bold [s] (string/format "<b>%s</b>" s))
+(defn italic [s] (string/format "<i>%s</i>" s))
 
 (def grammar ~{
                # basic units
-               :chars (some (if-not "\n" 1))
+               :nl (+ "\n" "\r" "\r\n")
+               :chars (some (if-not :nl 1))
 
                # styling
-               :bold (* "==" (cmt (capture :chars) ,bold) "==")
+               :inbold (some (if-not "=" 1))
+               :bold (* "==" (cmt (capture :inbold) ,bold) "==")
+               :initalic (some (if-not "/" 1))
+               :italic (* "//" (cmt (capture :initalic) ,italic) "//")
+               :styling (choice :italic :bold)
 
                # lines
                :hashes (between 1 6 "#")
                :title (cmt (* (capture :hashes) (capture :chars)) ,title)
 
                :quote (cmt (* "|" (capture :chars)) ,blockquote)
-               :text (some (choice :bold (capture :chars)))
+               :normalchar (if-not (choice :nl "=" "/") 1)
+               :normaltext (some :normalchar)
+               :text (some (choice :styling (capture :normaltext)))
 
                # main
 
-               :line (* (choice :title :quote :text) "\n")
-               :main (some :line)})
+               :line (* (choice :title :quote :text))
+               :main (* (some (* :line (choice :nl -1))))})
 
 (def example-text `# h1, which is cool
 ## h2
 | yay
-==xyz= lol`)
+foo ==bar!==, //baz// and ==0x00==
+| a quote
+no trailing newline!!`)
 
-(print (string/join (peg/match grammar example-text) "\n"))
+(print (string/join (peg/match grammar example-text)))
