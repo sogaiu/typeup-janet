@@ -42,4 +42,4 @@ foo ==bar!==, //baz// and ==0x00==
 | a quote
 no trailing newline!!`)
 
-(print (string/join (peg/match grammar example-text)))
+(defn html [s] (string/join (peg/match grammar s)))
