@@ -1,13 +1,13 @@
 #!/bin/janet
 
-(defn blockquote [s] (string "<blockquote>" (string/trim s) "</blockquote>"))
+(defn- blockquote [s] (string "<blockquote>" (string/trim s) "</blockquote>"))
 
-(defn title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
+(defn- title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
 
-(defn bold [& s] (string/format "<b>%s</b>" (string/join s)))
-(defn italic [& s] (string/format "<i>%s</i>" (string/join s)))
+(defn- bold [& s] (string/format "<b>%s</b>" (string/join s)))
+(defn- italic [& s] (string/format "<i>%s</i>" (string/join s)))
 
-(def grammar ~{
+(def- grammar ~{
                :nl (+ "\n" "\r" "\r\n")
                :char (if-not :nl 1)
                :chars (some :char)
@@ -27,7 +27,9 @@
                :title (cmt (* (capture :hashes) :text) ,title)
 
                :quote (cmt (* "|" (capture :chars)) ,blockquote)
+               :hr (replace (at-least 2 "-") "<hr>")
 
-               :main (some (choice :title :quote :text))})
+               :line (choice :title :quote :hr :text "")
+               :main (choice (* (some (* :line "\n")) :line) :line)})
 
-(defn html [s] (string/join (peg/match grammar s)))
+(defn html [s] (string/join (or (peg/match grammar s) (error "no match"))))
