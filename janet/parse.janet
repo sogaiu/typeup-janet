@@ -6,6 +6,7 @@
 
 (defn- bold [& s] (string/format "<b>%s</b>" (string/join s)))
 (defn- italic [& s] (string/format "<i>%s</i>" (string/join s)))
+(defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
 
 (def- grammar ~{
                :nl (+ "\n" "\r" "\r\n")
@@ -29,7 +30,11 @@
                :quote (cmt (* "|" (capture :chars)) ,blockquote)
                :hr (replace (at-least 2 "-") "<hr>")
 
-               :line (choice :title :quote :hr :text "")
-               :main (choice (* (some (* :line "\n")) :line) :line)})
+               :paragraph (cmt (some (* :text "\n")) ,paragraph)
 
-(defn html [s] (string/join (or (peg/match grammar s) (error "no match"))))
+               :line (choice :title :quote :hr "")
+               :main (some (choice (* :line "\n") :paragraph))})
+
+# TODO: errors are bad here
+(defn html "Parse and render a typeup string to HTML" [s] 
+  (string/join (or (peg/match grammar (string s "\n")) (error "no match"))))

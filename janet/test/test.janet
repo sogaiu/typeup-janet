@@ -1,10 +1,10 @@
 (import testament :prefix "" :exit true)
 (import ../parse)
 
-(def cases @{"//foo//" "<i>foo</i>"
-             "==foo==" "<b>foo</b>"
-             "==//foo//==" "<b><i>foo</i></b>"
-             "//==foo==//" "<i><b>foo</b></i>"
+(def cases @{"//foo//" "<p><i>foo</i></p>"
+             "==foo==" "<p><b>foo</b></p>"
+             "==//foo//==" "<p><b><i>foo</i></b></p>"
+             "//==foo==//" "<p><i><b>foo</b></i></p>"
              "# foo" "<h1>foo</h1>"
              "#### foo" "<h4>foo</h4>"
              "# foo" "<h1>foo</h1>"
@@ -13,8 +13,10 @@
              ` ""
              `paragraph
              one
+
+             //two//
              
-             two` "<p>paragraph one</p><p>two</p>"
+             three` "<p>paragraph one</p><p><i>two</i></p><p>three</p>"
              "--" "<hr>"
              "-----" "<hr>"})
 
