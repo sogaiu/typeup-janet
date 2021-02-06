@@ -7,6 +7,8 @@
 (defn- bold [& s] (string/format "<b>%s</b>" (string/join s)))
 (defn- italic [& s] (string/format "<i>%s</i>" (string/join s)))
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
+(defn- ul [& s] (string/format "<ul>%s</ul>" 
+                               (string/join (map (fn [s] (string/format "<li>%s</li>" s)) s))))
 
 (def- grammar ~{
                :nl (+ "\n" "\r" "\r\n")
@@ -32,8 +34,13 @@
 
                :paragraph (cmt (some (* :text "\n")) ,paragraph)
 
+               :li (* (choice (some (if-not (choice :nl "]") :text)) "") :nl)
+               :ul (* "[" (? "\n") (cmt (some :li) ,ul) "]")
+               :list :ul
+
                :line (choice :title :quote :hr "")
-               :main (some (choice (* :line "\n") :paragraph))})
+               :element (choice :list (* :line "\n") :paragraph)
+               :main (some :element)})
 
 # TODO: errors are bad here
 (defn html "Parse and render a typeup string to HTML" [s] 

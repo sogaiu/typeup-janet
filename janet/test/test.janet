@@ -17,6 +17,18 @@
              //two//
              
              three` "<p>paragraph one</p><p><i>two</i></p><p>three</p>"
+             `[
+             x is cool
+             y
+
+             z
+             ]` "<ul><li>x is cool</li><li>y</li><li>z</li></ul>"
+             `[
+             //italic//
+
+             ==bold==
+             ]
+             ` "<ul><li><i>italic</i></li><li><b>bold</b></li></ul>"
              "--" "<hr>"
              "-----" "<hr>"})
 
