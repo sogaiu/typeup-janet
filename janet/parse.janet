@@ -7,6 +7,8 @@
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
 (defn- ul [& s] (string/format "<ul>%s</ul>"
                                (string/join (map (fn [s] (string/format "<li>%s</li>" s)) s))))
+(defn- ol [& s] (string/format "<ol>%s</ol>"
+                               (string/join (map (fn [s] (string/format "<li>%s</li>" s)) s))))
 
 (def- grammar ~{:nl (+ "\n" "\r" "\r\n")
                 :char (if-not :nl 1)
@@ -31,9 +33,10 @@
 
                 :paragraph (cmt (some (* (cmt :text ,string) "\n")) ,paragraph)
 
-                :li (* (choice (some (if-not (choice :nl "]") :text)) "") :nl)
+                :li (* (choice (some (if-not (choice :nl (set "[]{}")) :text)) "") :nl)
                 :ul (* "[" (? "\n") (cmt (some :li) ,ul) "]")
-                :list :ul
+                :ol (* "{" (? "\n") (cmt (some :li) ,ol) "}")
+                :list (choice :ol :ul)
 
                 :line (choice :title :quote :hr "")
                 :element (choice :list (* :line "\n") :paragraph)
