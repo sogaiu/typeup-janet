@@ -5,10 +5,9 @@
 (defn- bold [& s] (string/format "<b>%s</b>" (string/join s)))
 (defn- italic [& s] (string/format "<i>%s</i>" (string/join s)))
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
-(defn- ul [& s] (string/format "<ul>%s</ul>"
-                               (string/join (map (fn [s] (string/format "<li>%s</li>" s)) s))))
-(defn- ol [& s] (string/format "<ol>%s</ol>"
-                               (string/join (map (fn [s] (string/format "<li>%s</li>" s)) s))))
+(defn- ul [& s] (string/format "<ul>%s</ul>" (string/join s)))
+(defn- ol [& s] (string/format "<ol>%s</ol>" (string/join s)))
+(defn- li [& s] (string/format "<li>%s</li>" (string/join s)))
 
 (def- grammar ~{:nl (+ "\n" "\r" "\r\n")
                 :char (if-not :nl 1)
@@ -33,7 +32,7 @@
 
                 :paragraph (cmt (some (* (cmt :text ,string) "\n")) ,paragraph)
 
-                :li (* (choice (some (if-not (choice :nl (set "[]{}")) :text)) "") :nl)
+                :li (* (choice :list (cmt (some (if-not (choice :nl (set "[]{}")) :text)) ,li) "") :nl)
                 :ul (* "[" (? "\n") (cmt (some :li) ,ul) "]")
                 :ol (* "{" (? "\n") (cmt (some :li) ,ol) "}")
                 :list (choice :ol :ul)
