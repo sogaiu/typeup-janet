@@ -1,3 +1,5 @@
+#!/bin/janet
+
 (defn- blockquote [s] (string "<blockquote>" (string/trim s) "</blockquote>"))
 
 (defn- title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
@@ -8,21 +10,29 @@
 (defn- ul [& s] (string/format "<ul>%s</ul>" (string/join s)))
 (defn- ol [& s] (string/format "<ol>%s</ol>" (string/join s)))
 (defn- li [& s] (string/format "<li>%s</li>" (string/join s)))
+(defn- code [& s] (string/format "<code>%s</code>" (string/join s)))
+(defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
 
 (def- grammar ~{:nl (+ "\n" "\r" "\r\n")
                 :char (if-not :nl 1)
                 :chars (some :char)
 
-                :normalchar (if-not (choice :nl "=" "/") 1)
+                # BUG: this causes matching to stop on encontering these chars
+                :normalchar (if-not (choice :nl "=" "/" "`") 1)
                 :normaltext (some :normalchar)
-                :styling (choice :italic :bold)
+                :styling (choice :code :italic :bold)
                 :text (some (choice :styling (capture :normaltext)))
 
-                :inbold (if (some (if-not "=" 1)) :text)
-                :bold (* "==" (cmt :inbold ,bold) "==")
+                :in-bold (if (some (if-not "=" 1)) :text)
+                :bold (* "==" (cmt :in-bold ,bold) "==")
 
-                :initalic (if (some (if-not "/" 1)) :text)
-                :italic (* "//" (cmt :initalic ,italic) "//")
+                :in-italic (if (some (if-not "/" 1)) :text)
+                :italic (* "//" (cmt :in-italic ,italic) "//")
+
+                :in-code (if (some (if-not "`" 1)) :text)
+                :code (* "`" (cmt :in-code ,code) "`")
+
+                :pre-code (* "```\n" (cmt (some (* (capture :normaltext) "\n")) ,pre-code) "```")
 
                 :hashes (between 1 6 "#")
                 :title (cmt (* (capture :hashes) :text) ,title)
@@ -38,9 +48,14 @@
                 :list (choice :ol :ul)
 
                 :line (choice :title :quote :hr "")
-                :element (choice :list (* :line "\n") :paragraph)
+                :element (choice :pre-code :list (* :line "\n") :paragraph)
                 :main (some :element)})
 
-# TODO: errors are bad here
+# TODO: error handling are bad here
 (defn html "Parse and render a typeup string to HTML" [s]
   (string/join (or (peg/match grammar (string s "\n")) (error "no match"))))
+
+(defn main [&] (do 
+                 (def buf @"")
+                 (file/read stdin :all buf)
+                 (prin (html buf))))

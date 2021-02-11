@@ -62,6 +62,10 @@
              }
              ]`
 `<ul><li>this</li><li>is</li><li>cool and</li><ol><li>x</li><li>y</li><li>z</li><ul><li>a</li><li>b</li><li>c</li></ul></ol></ul>`
+             "`xyz`" "<p><code>xyz</code></p>"
+             # Ignore this test for now until we find a way to accpet single '
+             # "''xyz''" "<p><code>xyz</code></p>"
+             "```\nhello\nxyz\n```" "<pre><code>hello\nxyz</code></pre>"
              })
 
 
