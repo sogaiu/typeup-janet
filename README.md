@@ -22,6 +22,6 @@ A walkthrough of the syntax is provided in [example.tup](https://git.sr.ht/~skuz
 
 # Status
 
-typeup is a work-in-progress project. I'm writing, unoptimized parser in Janet using the PEG module (work in progress, can render some elements to HTML). [Karityham](https://github.com/Karitham) is working on a [parser](https://github.com/Karitham/typeup) in Rust (WIP).
+typeup is a work-in-progress project. I'm writing, unoptimized parser in Janet using the PEG module (work in progress, can render some elements to HTML). [Karitham](https://github.com/Karitham) is working on a [parser](https://github.com/Karitham/typeup) in Rust (WIP).
 
 If you want to join in, tell me. My contact details are at [skuz.xyz](https://skuz.xyz/)
