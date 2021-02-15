@@ -17,8 +17,7 @@
                 :char (if-not :nl 1)
                 :chars (some :char)
 
-                # BUG: this causes matching to stop on encontering these chars
-                :normalchar (if-not (choice :nl "=" "/" "`") 1)
+                :normalchar (if-not (choice :nl "==" "//" "`") 1)
                 :normaltext (some :normalchar)
                 :styling (choice :code :italic :bold)
                 :text (some (choice :styling (capture :normaltext)))
