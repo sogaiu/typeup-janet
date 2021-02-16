@@ -1,49 +1,47 @@
 #!/bin/janet
 
-(defn- blockquote [s] (string "<blockquote>" (string/trim s) "</blockquote>"))
-
 (defn- title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
 
-(defn- bold [& s] (string/format "<b>%s</b>" (string/join s)))
-(defn- italic [& s] (string/format "<i>%s</i>" (string/join s)))
+# TODO these functions can all become a function that returns a function
+
+(defn- html-wrap [tag] (fn [& s] (string "<" tag ">" (string/join s) "</" tag ">")))
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
-(defn- ul [& s] (string/format "<ul>%s</ul>" (string/join s)))
-(defn- ol [& s] (string/format "<ol>%s</ol>" (string/join s)))
-(defn- li [& s] (string/format "<li>%s</li>" (string/join s)))
-(defn- code [& s] (string/format "<code>%s</code>" (string/join s)))
 (defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
 
 (def- grammar ~{:nl (+ "\n" "\r" "\r\n")
                 :char (if-not :nl 1)
                 :chars (some :char)
 
+                # TODO variableize opening/close chars
                 :normalchar (if-not (choice :nl "==" "//" "`") 1)
                 :normaltext (some :normalchar)
                 :styling (choice :code :italic :bold)
                 :text (some (choice :styling (capture :normaltext)))
 
-                :in-bold (if (some (if-not "=" 1)) :text)
-                :bold (* "==" (cmt :in-bold ,bold) "==")
+                :in-bold (if (some (if-not "==" 1)) :text)
+                # TODO cmt -> replace for cleaner code
+                :bold (* "==" (cmt :in-bold ,(html-wrap "b")) "==")
 
-                :in-italic (if (some (if-not "/" 1)) :text)
-                :italic (* "//" (cmt :in-italic ,italic) "//")
+                # TODO these are repetitive
+                :in-italic (if (some (if-not "//" 1)) :text)
+                :italic (* "//" (cmt :in-italic ,(html-wrap "i")) "//")
 
-                :in-code (if (some (if-not "`" 1)) :text)
-                :code (* "`" (cmt :in-code ,code) "`")
+                :in-code (if (some (if-not "``" 1)) :text)
+                :code (* "`" (cmt :in-code ,(html-wrap "code")) "`")
 
                 :pre-code (* "```\n" (cmt (some (* (capture :normaltext) "\n")) ,pre-code) "```")
 
                 :hashes (between 1 6 "#")
                 :title (cmt (* (capture :hashes) :text) ,title)
 
-                :quote (cmt (* "|" (capture :chars)) ,blockquote)
+                :quote (cmt (* "|" (capture :chars)) ,(html-wrap "blockquote"))
                 :hr (replace (at-least 2 "-") "<hr>")
 
                 :paragraph (cmt (some (* (cmt :text ,string) "\n")) ,paragraph)
 
-                :li (* (choice :list (cmt (some (if-not (choice :nl (set "[]{}")) :text)) ,li) "") :nl)
-                :ul (* "[" (? "\n") (cmt (some :li) ,ul) "]")
-                :ol (* "{" (? "\n") (cmt (some :li) ,ol) "}")
+                :li (* (choice :list (cmt (some (if-not (choice :nl (set "[]{}")) :text)) ,(html-wrap "li")) "") :nl)
+                :ul (* "[" (? "\n") (cmt (some :li) ,(html-wrap "ul")) "]")
+                :ol (* "{" (? "\n") (cmt (some :li) ,(html-wrap "ol")) "}")
                 :list (choice :ol :ul)
 
                 :line (choice :title :quote :hr "")

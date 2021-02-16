@@ -66,10 +66,13 @@
              # Ignore this test for now until we find a way to accpet single '
              # "''xyz''" "<p><code>xyz</code></p>"
              "```\nhello\nxyz\n```" "<pre><code>hello\nxyz</code></pre>"
+             "this = normal text and should/must stay as is" "<p>this = normal text and should/must stay as is</p>"
              })
 
 
 # TODO: make html look nice
+# TODO: macroize to get specific info
+# TODO: named tests
 (deftest all-cases (eachp [k v] cases (assert-equal v (parse/html k))))
 
 (run-tests!)
