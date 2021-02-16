@@ -5,7 +5,7 @@ sources:
   - https://git.sr.ht/~skuzzymiglet/typeup
 tasks:
   - janet-setup: |
-      cd janet
+      cd typeup/janet
       sudo jpm deps
   - janet-test: |
-      janet janet/test/test.janet
+      janet typeup/janet/test/test.janet
