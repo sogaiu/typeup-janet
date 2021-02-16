@@ -1,6 +1,7 @@
 image: alpine/edge
 packages:
   - janet
+  - janet-dev
 sources:
   - https://git.sr.ht/~skuzzymiglet/typeup
 tasks:
