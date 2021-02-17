@@ -22,15 +22,15 @@
                          :styling (choice :code :italic :bold)
                          :text (some (choice :styling (capture :normaltext)))
 
-                         :in-bold (if (to "==") :text)
+                         :in-bold (if (to :bold-wrap) :text)
                          # TODO replace -> replace for cleaner code
-                         :bold (* "==" (replace :in-bold ,(html-wrap "b")) "==")
+                         :bold (* :bold-wrap (replace :in-bold ,(html-wrap "b")) :bold-wrap)
 
                          # TODO these are repetitive
-                         :in-italic (if (to "//") :text)
-                         :italic (* "//" (replace :in-italic ,(html-wrap "i")) "//")
+                         :in-italic (if (to :italic-wrap) :text)
+                         :italic (* :italic-wrap (replace :in-italic ,(html-wrap "i")) :italic-wrap)
 
-                         :in-code (if (to "`") :text)
+                         :in-code (if (to :code-wrap) :text)
                          :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
 
                          :pre-code (* "```\n" (replace (some (* (capture :normaltext) "\n")) ,pre-code) "```")
