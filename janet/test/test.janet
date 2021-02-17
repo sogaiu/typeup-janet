@@ -73,6 +73,6 @@ c
 (deftest all
   (eachp [target tcases] cases
     (eachp [k v] tcases
-      (assert-equal v (translate k target)))))
+      (try (assert-equal v (translate k target)) ([err] (printf "error parsing %M: %s" k err))))))
 
 (run-tests!)
