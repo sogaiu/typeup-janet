@@ -5,11 +5,9 @@
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
 (defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
 
-# vim killed my link code. RIP
-# anyways, there's a circular dependency between link and styling. needs to be fixed. also I need to sleep
-
 (defn link [inside]
   (var html "")
+  # this could be airier and less duplicated
   (cond
     (string/find "|" inside) (do
                                (def parts (string/split "|" inside))
@@ -19,36 +17,47 @@
       (set html (string/format `<a href="%s">%s</a>` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
   html)
 
-(def styling ~{:text (some (choice :styling (capture :normaltext)))
+(defn image [inside]
+  (var html "")
+  (cond
+    (string/find "|" inside) (do
+                               (def parts (string/split "|" inside))
+                               (set html (string/format `<img src="%s" alt="%s">` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2)))))
+    (do
+      (def parts (string/split " " inside))
+      (set html (string/format `<img src="%s" alt="%s">` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
+  html)
 
-               :main :text
-               :nl (+ "\n" "\r" "\r\n")
-               # The basics
-               :char (if-not :nl 1)
-               :chars (some :char)
-               :wrapping (choice :bold-wrap :italic-wrap :code-wrap)
+(def document ~{:nl (+ "\n" "\r" "\r\n")
+                # The basics
+                :char (if-not :nl 1)
+                :chars (some :char)
+                :wrapping (choice :bold-wrap :italic-wrap :code-wrap)
 
-               :normalchar (if-not (choice :nl :wrapping) 1)
-               :normaltext (some :normalchar)
+                :normalchar (if-not (choice :nl :wrapping) 1)
+                :normaltext (some :normalchar)
 
-               # Styling
-               :styling (choice :link :code :italic :bold)
+                # Styling
+                :styling (choice :image :link :code :italic :bold)
 
-               :bold-wrap (choice "*" "==")
-               :in-bold (if (to :bold-wrap) :text)
-               :bold (* :bold-wrap (replace :in-bold ,(html-wrap "b")) :bold-wrap)
+                :bold-wrap (choice "*" "==")
+                :in-bold (if (to :bold-wrap) :text)
+                :bold (* :bold-wrap (replace :in-bold ,(html-wrap "b")) :bold-wrap)
 
-               :italic-wrap (choice "_" "//")
-               :in-italic (if (to :italic-wrap) :text)
-               :italic (* :italic-wrap (replace :in-italic ,(html-wrap "i")) :italic-wrap)
+                :italic-wrap (choice "_" "//")
+                :in-italic (if (to :italic-wrap) :text)
+                :italic (* :italic-wrap (replace :in-italic ,(html-wrap "i")) :italic-wrap)
 
-               :code-wrap (choice "''" "`")
-               :in-code (capture (some (if-not :code-wrap 1)))
-               :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
+                :code-wrap (choice "''" "`")
+                :in-code (capture (some (if-not :code-wrap 1)))
+                :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
 
-               :link (replace (* "[" (capture (to "]")) "]") ,link)})
+                :link (replace (* "[" (capture (to "]")) "]") ,link)
+                :image (replace (* (choice "image" "img" "!") "[" (capture (to "]")) "]") ,image)
 
-(def document ~{# Structural
+                :text (some (choice :styling (capture :normaltext)))
+
+                # Structural
 
                 :pre-code (* "```\n" (replace (some (* (capture :normaltext) "\n")) ,pre-code) "```")
 
@@ -67,38 +76,4 @@
 
                 :line (choice :title :quote :hr "")
                 :element (choice :pre-code :list (* :line "\n") :paragraph)
-                :main (some :element)
-
-                # Code copied from styling. We need to find a way to merge styling and document. For now, copy-pasting will have to do
-                # Except :main :)
-                # ===================================================================================
-                :text (some (choice :styling (capture :normaltext)))
-
-                :nl (+ "\n" "\r" "\r\n")
-                # The basics
-                :char (if-not :nl 1)
-                :chars (some :char)
-                :wrapping (choice :bold-wrap :italic-wrap :code-wrap)
-
-                :normalchar (if-not (choice :nl :wrapping) 1)
-                :normaltext (some :normalchar)
-
-                # Styling
-                :styling (choice :link :code :italic :bold)
-
-                :bold-wrap (choice "*" "==")
-                :in-bold (if (to :bold-wrap) :text)
-                :bold (* :bold-wrap (replace :in-bold ,(html-wrap "b")) :bold-wrap)
-
-                :italic-wrap (choice "_" "//")
-                :in-italic (if (to :italic-wrap) :text)
-                :italic (* :italic-wrap (replace :in-italic ,(html-wrap "i")) :italic-wrap)
-                # :main :text
-
-                :code-wrap (choice "''" "`")
-                :in-code (capture (some (if-not :code-wrap 1)))
-                :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
-
-                :link (replace (* "[" (capture (to "]")) "]") ,link)
-                # ===================================================================================
-})
+                :main (some :element)})
