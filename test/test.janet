@@ -75,8 +75,8 @@ c
                  # `[==x== ==y==]` `<p><a href="==y=="><b>x</b></a></p>`
                  `[skuzzymiglet's blog|https://skuz.xyz]'s load times are very good!` `<p><a href="https://skuz.xyz">skuzzymiglet's blog</a>'s load times are very good!</p>`
                  `[skuzzymiglet's blog https://skuz.xyz]'s load times are very good!` `<p><a href="https://skuz.xyz">skuzzymiglet's blog</a>'s load times are very good!</p>`
-                 `img[this is a cool caption https://thispersondoesnotexist.com/image]` `<img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption">`
-                 `![this is a cool caption https://thispersondoesnotexist.com/image]` `<img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption">`
+                 `img[this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
+                 `![this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
                  # `#|{
                  # a|b|c|d
                  # e|f|g|h
