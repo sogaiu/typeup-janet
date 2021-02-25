@@ -8,6 +8,17 @@
 # vim killed my link code. RIP
 # anyways, there's a circular dependency between link and styling. needs to be fixed. also I need to sleep
 
+(defn link [inside]
+  (var html "")
+  (cond
+    (string/find "|" inside) (do
+                               (def parts (string/split "|" inside))
+                               (set html (string/format `<a href="%s">%s</a>` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2)))))
+    (do
+      (def parts (string/split " " inside))
+      (set html (string/format `<a href="%s">%s</a>` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
+  html)
+
 (def styling ~{:text (some (choice :styling (capture :normaltext)))
 
                :main :text
@@ -35,7 +46,7 @@
                :in-code (capture (some (if-not :code-wrap 1)))
                :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
 
-                :link (replace (* "[" (capture (to "]")) "]") ,link)})
+               :link (replace (* "[" (capture (to "]")) "]") ,link)})
 
 (def document ~{# Structural
 
