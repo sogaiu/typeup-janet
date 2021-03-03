@@ -77,11 +77,11 @@ c
                  `[skuzzymiglet's blog https://skuz.xyz]'s load times are very good!` `<p><a href="https://skuz.xyz">skuzzymiglet's blog</a>'s load times are very good!</p>`
                  `img[this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
                  `![this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
-                 # `#|{
-                 # a|b|c|d
-                 # e|f|g|h
-                 # }` 
-})
+                 `#---{
+a---b---c---d---
+e---f---g---h---
+}`
+                 `<table><tr><th>a</th><th>b</th><th>c</th><th>d</th></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr></table>`})
 
 (def cases @{# TODO: make html look nice
              "html" html-cases})

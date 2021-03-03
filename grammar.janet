@@ -5,6 +5,9 @@
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
 (defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
 
+(defn map-indexed [f ds]
+  (map f (range 0 (length ds)) ds))
+
 (defn link [inside]
   (var html "")
   # this could be airier and less duplicated
@@ -27,6 +30,19 @@
       (def parts (string/split " " inside))
       (set html (string/format `<img src="%s" alt="%s">` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
   html)
+
+# Not dropping the captured delim, so have to ignore first parameter
+# table is reserved so table-
+(defn table- [_ & rows] (string "<table>"
+                                (string/join
+                                  (map-indexed (fn [i row]
+                                                 (string "<tr>"
+                                                         (string/join (map (fn [cell]
+                                                                             (case i
+                                                                               0 (string "<th>" cell "</th>")
+                                                                               (string "<td>" cell "</td>"))) row))
+                                                         "</tr>")) rows))
+                                "</table>"))
 
 (def document ~{:nl (+ "\n" "\r" "\r\n")
                 # The basics
@@ -74,6 +90,18 @@
                 :ol (* "{" (? "\n") (replace (some :li) ,(html-wrap "ol")) "}")
                 :list (choice :ol :ul)
 
+                :table (replace (* "#" (capture (to "{") :delim) "{\n"
+                                   (some
+                                     # row
+                                     (cmt
+                                       (*
+                                         (some (* 
+                                                 (capture (some (if-not (choice :nl (backmatch :delim)) 1))) 
+                                                 (choice :nl (backmatch :delim))))
+                                         # (capture (capture (some (if-not (choice :nl (backmatch :delim)) 1))))
+                                         "\n") ,array))
+                                   "}") ,table-)
+
                 :line (choice :title :quote :hr "")
-                :element (choice :pre-code :list (* :line "\n") :paragraph)
+                :element (choice :table :pre-code :list (* :line "\n") :paragraph)
                 :main (some :element)})
