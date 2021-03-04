@@ -1,6 +1,6 @@
 (defn- vpp [& v] (pp v))
 
-(defn- title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
+(defn- header [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
 (defn- html-wrap [tag] (fn [& s] (string "<" tag ">" (string/join s) "</" tag ">")))
 (defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
 (defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
@@ -44,6 +44,9 @@
                                                          "</tr>")) rows))
                                 "</table>"))
 
+# TODO: plain <title>, styled h1. meta title
+(defn title [s] (string "<title>" (string/trim s) "</title>" "<h1>" (string/trim s) "</h1>"))
+
 (def document ~{:nl (+ "\n" "\r" "\r\n")
                 # The basics
                 :char (if-not :nl 1)
@@ -78,7 +81,8 @@
                 :pre-code (* "```\n" (replace (some (* (capture :normaltext) "\n")) ,pre-code) "```")
 
                 :hashes (between 1 6 "#")
-                :title (replace (* (capture :hashes) :text) ,title)
+                :header (replace (* (capture :hashes) :text) ,header)
+                :title (replace (* "=#" (capture :chars)) ,title)
 
                 :quote (replace (* "|" (capture :chars)) ,(html-wrap "blockquote"))
                 :hr (replace (at-least 2 "-") "<hr>")
@@ -102,6 +106,6 @@
                                          "\n") ,array))
                                    "}") ,table-)
 
-                :line (choice :title :quote :hr "")
+                :line (choice :header :title :quote :hr "")
                 :element (choice :table :pre-code :list (* :line "\n") :paragraph)
                 :main (some :element)})

@@ -8,11 +8,12 @@
                  "==//foo//==" "<p><b><i>foo</i></b></p>"
                  "//==foo==//" "<p><i><b>foo</b></i></p>"
                  "//==foo== bar//bed wire" "<p><i><b>foo</b> bar</i>bed wire</p>"
-                 # Titles
+                 # Headings
                  "# foo" "<h1>foo</h1>"
                  "#### foo" "<h4>foo</h4>"
                  "# foo" "<h1>foo</h1>"
                  "# //lul//" "<h1><i>lul</i></h1>"
+                 "=# //lul//" "<title>//lul//</title><h1>//lul//</h1>"
                  # Empty lines
                  `
 ` ""
