@@ -1,49 +1,30 @@
 (defn- vpp [& v] (pp v))
 
-(defn- title [hashes & s] (string/format "<h%d>%s</h%d>" (length hashes) (string/trim (string/join s)) (length hashes)))
-(defn- html-wrap [tag] (fn [& s] (string "<" tag ">" (string/join s) "</" tag ">")))
-(defn- paragraph [& s] (string/format "<p>%s</p>" (string/join s " ")))
-(defn- pre-code [& s] (string/format "<pre><code>%s</code></pre>" (string/join s "\n")))
+(defn- header [hashes & s] [:header (length hashes) s])
+(defn- node [kw] (fn [& s] [kw s]))
 
 (defn map-indexed [f ds]
   (map f (range 0 (length ds)) ds))
 
-(defn link [inside]
-  (var html "")
+# TODO: do this in PEG
+(defn- link-and-text [inside]
+  (var ret [])
   # this could be airier and less duplicated
   (cond
     (string/find "|" inside) (do
                                (def parts (string/split "|" inside))
-                               (set html (string/format `<a href="%s">%s</a>` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2)))))
+                               (set ret [(get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2))]))
     (do
       (def parts (string/split " " inside))
-      (set html (string/format `<a href="%s">%s</a>` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
-  html)
+      (set ret [(get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")])))
+  ret)
 
 (defn image [inside]
-  (var html "")
-  (cond
-    (string/find "|" inside) (do
-                               (def parts (string/split "|" inside))
-                               (set html (string/format `<img src="%s" alt="%s">` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2)))))
-    (do
-      (def parts (string/split " " inside))
-      (set html (string/format `<img src="%s" alt="%s">` (get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")))))
-  html)
+  [:image ;(link-and-text inside)])
+(defn link [inside]
+  [:link ;(link-and-text inside)])
 
-# Not dropping the captured delim, so have to ignore first parameter
-# table is reserved so table-
-(defn table- [_ & rows] (string "<table>"
-                                (string/join
-                                  (map-indexed (fn [i row]
-                                                 (string "<tr>"
-                                                         (string/join (map (fn [cell]
-                                                                             (case i
-                                                                               0 (string "<th>" cell "</th>")
-                                                                               (string "<td>" cell "</td>"))) row))
-                                                         "</tr>")) rows))
-                                "</table>"))
-
+# needs trailing newline
 (def document ~{:nl (+ "\n" "\r" "\r\n")
                 # The basics
                 :char (if-not :nl 1)
@@ -58,15 +39,16 @@
 
                 :bold-wrap (choice "*" "==")
                 :in-bold (if (to :bold-wrap) :text)
-                :bold (* :bold-wrap (replace :in-bold ,(html-wrap "b")) :bold-wrap)
+                :bold (* :bold-wrap (replace :in-bold ,(node :bold)) :bold-wrap)
 
                 :italic-wrap (choice "_" "//")
                 :in-italic (if (to :italic-wrap) :text)
-                :italic (* :italic-wrap (replace :in-italic ,(html-wrap "i")) :italic-wrap)
+                # : not allowed before italic, to prevent URLs from becoming italic
+                :italic (* :italic-wrap (replace :in-italic ,(node :italic)) :italic-wrap)
 
                 :code-wrap (choice "''" "`")
                 :in-code (capture (some (if-not :code-wrap 1)))
-                :code (* :code-wrap (replace :in-code ,(html-wrap "code")) :code-wrap)
+                :code (* :code-wrap (replace :in-code ,(node :code)) :code-wrap)
 
                 :link (replace (* "[" (capture (to "]")) "]") ,link)
                 :image (replace (* (choice "image" "img" "!") "[" (capture (to "]")) "]") ,image)
@@ -75,33 +57,46 @@
 
                 # Structural
 
-                :pre-code (* "```\n" (replace (some (* (capture :normaltext) "\n")) ,pre-code) "```")
+                :in-pre-code (any (if-not "===" (* :chars "\n")))
+                :pre-code (* "===\n" (replace (capture :in-pre-code) ,(node :multiline-code)) "===")
 
                 :hashes (between 1 6 "#")
-                :title (replace (* (capture :hashes) :text) ,title)
+                :header (replace (* (capture :hashes) (any " ") :text) ,header)
+                :title (replace (* "=#" (any " ") (capture :chars)) ,(node :title))
 
-                :quote (replace (* "|" (capture :chars)) ,(html-wrap "blockquote"))
-                :hr (replace (at-least 2 "-") "<hr>")
+                # TODO: styled
+                :quote (replace (* "|" (any " ") (capture :chars)) ,(node :blockquote))
+                # TODO: styled
+                :in-multiline-quote (any (if-not `"""` (* :chars "\n")))
+                :multiline-quote (* "\"\"\"\n" (replace (capture :in-multiline-quote) ,(node :blockquote)) `"""`)
 
-                :paragraph (replace (some (* (replace :text ,string) "\n")) ,paragraph)
+                :hr (replace (at-least 2 "-") [:break])
 
-                :li (* (choice :list (replace (some (if-not (choice :nl (set "[]{}")) :text)) ,(html-wrap "li")) "") :nl)
-                :ul (* "[" (? "\n") (replace (some :li) ,(html-wrap "ul")) "]")
-                :ol (* "{" (? "\n") (replace (some :li) ,(html-wrap "ol")) "}")
+                # Styled paragraph into lines
+                # XXX: We need to insert a space after every line, where to do that? 
+                :paragraph (replace (some (* :text (replace "\n" " "))) ,(node :paragraph))
+
+                :li (* (choice :list (replace (some (if-not (choice :nl (set "[]{}")) :text)) ,(fn [& x] [;x])) "") :nl)
+                :ul (* "[" (? "\n") (replace (some :li) ,(node :unordered-list)) "]")
+                :ol (* "{" (? "\n") (replace (some :li) ,(node :ordered-list)) "}")
                 :list (choice :ol :ul)
 
+                # TODO: styled text in tables
+                # XXX: how should we handle 1-column rows? for now, let's allow them if they have a delim at the end
                 :table (replace (* "#" (capture (to "{") :delim) "{\n"
                                    (some
                                      # row
                                      (cmt
                                        (*
-                                         (some (* 
-                                                 (capture (some (if-not (choice :nl (backmatch :delim)) 1))) 
-                                                 (choice :nl (backmatch :delim))))
+                                         (some (*
+                                                 (replace (capture (some (if-not (choice :nl (backmatch :delim)) 1))) ,(fn [x] [x]))
+                                                 (backmatch :delim)))
+                                         (? (replace (capture (some (if-not (choice :nl (backmatch :delim)) 1))) ,(fn [x] [x])))
+                                         "\n"
                                          # (capture (capture (some (if-not (choice :nl (backmatch :delim)) 1))))
-                                         "\n") ,array))
-                                   "}") ,table-)
+) ,array))
+                                   "}") ,(fn [_ & rows] [:table rows]))
 
-                :line (choice :title :quote :hr "")
-                :element (choice :table :pre-code :list (* :line "\n") :paragraph)
+                :line (choice :title :header :quote :hr "")
+                :element (choice :table :multiline-quote :pre-code :list (* :line "\n") :paragraph)
                 :main (some :element)})

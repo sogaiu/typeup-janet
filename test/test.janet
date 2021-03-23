@@ -1,94 +1,58 @@
-(import testament :prefix "" :exit true)
-(import ../translate :prefix "")
+(import ./testament/src/testament :prefix "" :exit true)
 (import ../grammar)
+(import ../html)
 
-(def html-cases {# Styling
-                 "//foo//" "<p><i>foo</i></p>"
-                 "==foo==" "<p><b>foo</b></p>"
-                 "==//foo//==" "<p><b><i>foo</i></b></p>"
-                 "//==foo==//" "<p><i><b>foo</b></i></p>"
-                 "//==foo== bar//bed wire" "<p><i><b>foo</b> bar</i>bed wire</p>"
-                 # Titles
-                 "# foo" "<h1>foo</h1>"
-                 "#### foo" "<h4>foo</h4>"
-                 "# foo" "<h1>foo</h1>"
-                 "# //lul//" "<h1><i>lul</i></h1>"
-                 # Empty lines
-                 `
-` ""
-                 # <hr>
-                 "--" "<hr>"
-                 "-----" "<hr>"
-                 # paragraphs
-                 `paragraph
-one
+(def ast-tests
+  {"# title\n" [[:header 1 ["title"]]]
+   "# title *bold*\n" [[:header 1 ["title " [:bold ["bold"]]]]]
+   `
+   [
+   foo
+   bar*bed*
+   ]
+   `
+   [[:unordered-list [["foo"] ["bar" [:bold ["bed"]]]]]]
+   `=# hello` [[:title ["hello"]]]
+   `#||{
+   header||cells
+   foo||bar
+   }
+   ` 
+   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]]
+   `#||{
+   header||cells
+   foo||bar
+   }
+   ` 
+   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]]
+   `#||{
+   header||
+   foo||
+   }
+   ` 
+   [[:table [[["header"]] [["foo"]]]]]
+   })
 
-//two//
+(deftest ast
+  (eachp [k v] ast-tests
+    (eprintf "Input: %.10M" (string/trim k))
+    (assert-equal v (freeze (peg/match grammar/document (string k "\n"))))))
 
-three` "<p>paragraph one</p><p><i>two</i></p><p>three</p>"
-                 # lists
-                 `[
-x is cool
-y
+(def html-tests
+  {[[:title ["hello"]]] `<title>hello</title><h1>hello</h1>`
+   [[:header 1 ["title"]]] "<h1>title</h1>"
+   [[:header 6 ["title"]]] "<h6>title</h6>"
+   [[:header 1 ["a" "b" "c"]]] "<h1>abc</h1>"
+   [[:header 1 ["a" [:bold "b"]]]] "<h1>a<b>b</b></h1>"
+   [[:link "href" "text"]] `<a href="href">text</a>`
+   [[:paragraph "text"]] `<p>text</p>`
+   [[:unordered-list [["foo"] ["bar" [:bold "bed"]]]]] `<ul><li>foo</li><li>bar<b>bed</b></li></ul>`
+   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]] "<table><tr><th>header</th><th>cells</th></tr><tr><td>foo</td><td>bar</td></tr></table>"
+   [:title ["xyz"]] "<title>xyz</title><h1>xyz</h1>"})
 
-z
-]` "<ul><li>x is cool</li><li>y</li><li>z</li></ul>"
-                 `[
-//italic//
-
-==//bold and italic//==
-]
-` "<ul><li><i>italic</i></li><li><b><i>bold and italic</i></b></li></ul>"
-                 `{
-foo
-bar
-
-baz
-==one //two// three==
-}` "<ol><li>foo</li><li>bar</li><li>baz</li><li><b>one <i>two</i> three</b></li></ol>"
-                 `[
-this
-is
-cool and
-{
-x
-y
-z
-[
-a
-b
-c
-]
-}
-]`
-                 `<ul><li>this</li><li>is</li><li>cool and</li><ol><li>x</li><li>y</li><li>z</li><ul><li>a</li><li>b</li><li>c</li></ul></ol></ul>`
-                 "`xyz`" "<p><code>xyz</code></p>"
-                 "''xyz''" "<p><code>xyz</code></p>"
-                 "```\nhello\nxyz\n```" "<pre><code>hello\nxyz</code></pre>"
-                 "`==lol==`" "<p><code>==lol==</code></p>"
-                 "this = normal text and should/must stay as is" "<p>this = normal text and should/must stay as is</p>"
-                 `[x y]` `<p><a href="y">x</a></p>`
-                 # only single spaces are considered whitespace delimiters right now
-                 # `[x  y]` `<p><a href="y">x</a></p>`
-                 `[x|y]` `<p><a href="y">x</a></p>`
-                 # no styled text for now
-                 # `[==x== ==y==]` `<p><a href="==y=="><b>x</b></a></p>`
-                 `[skuzzymiglet's blog|https://skuz.xyz]'s load times are very good!` `<p><a href="https://skuz.xyz">skuzzymiglet's blog</a>'s load times are very good!</p>`
-                 `[skuzzymiglet's blog https://skuz.xyz]'s load times are very good!` `<p><a href="https://skuz.xyz">skuzzymiglet's blog</a>'s load times are very good!</p>`
-                 `img[this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
-                 `![this is a cool caption https://thispersondoesnotexist.com/image]` `<p><img src="https://thispersondoesnotexist.com/image" alt="this is a cool caption"></p>`
-                 `#---{
-a---b---c---d---
-e---f---g---h---
-}`
-                 `<table><tr><th>a</th><th>b</th><th>c</th><th>d</th></tr><tr><td>e</td><td>f</td><td>g</td><td>h</td></tr></table>`})
-
-(def cases @{# TODO: make html look nice
-             "html" html-cases})
-
-(deftest all
-  (eachp [target tcases] cases
-    (eachp [k v] tcases
-      (try (assert-equal v (translate k target)) ([err] (printf "error parsing %M: %s" k err))))))
+(deftest html
+  (eachp [k v] html-tests
+    (eprintf "Input: %.10M" k)
+    (assert-equal v (html/render k))))
 
 (run-tests!)
