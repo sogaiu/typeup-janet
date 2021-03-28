@@ -19,6 +19,7 @@
       (set ret [(get (array/slice parts -2 -1) 0) (string/join (array/slice parts 0 -2) " ")])))
   ret)
 
+(defn meta [k v] [:set (string/trim k) (string/trim v)])
 (defn image [inside]
   [:image ;(link-and-text inside)])
 (defn link [inside]
@@ -62,7 +63,7 @@
 
                 :hashes (between 1 6 "#")
                 :header (replace (* (capture :hashes) (any " ") :text) ,header)
-                :title (replace (* "=#" (any " ") (capture :chars)) ,(node :title))
+                :title (replace (* "=#" (any " ") (capture :chars)) ,(fn [ast] [[:set "title" ast] [:header 1 ast]]))
 
                 # TODO: styled
                 :quote (replace (* "|" (any " ") (capture :chars)) ,(node :blockquote))
@@ -97,6 +98,15 @@
 ) ,array))
                                    "}") ,(fn [_ & rows] [:table rows]))
 
+                :metadata (choice :single-metadata :multi-metadata)
+                :single-metadata (cmt (* "@{" (capture (if-not (* "\n" (some 1)) (to "="))) "=" (capture (to "}")) "}\n") ,meta)
+                :multi-metadata (* "@{\n"
+                                   (some
+                                     (cmt
+                                       (*
+                                         (capture (to "=")) "=" (capture (to "\n")) "\n") ,meta))
+                                   "}")
+
                 :line (choice :title :header :quote :hr "")
-                :element (choice :table :multiline-quote :pre-code :list (* :line "\n") :paragraph)
+                :element (choice :metadata :table :multiline-quote :pre-code :list (* :line "\n") :paragraph)
                 :main (some :element)})

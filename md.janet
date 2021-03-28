@@ -1,4 +1,4 @@
-(defn render [ast]
+(defn render [meta ast]
   (match ast
     [:header n ast] (string (string/repeat "#" n) " " (render ast))
     [:bold ast] (string/format "**%s**" (render ast))
