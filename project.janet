@@ -1,4 +1,5 @@
 (declare-project
-  :dependencies ["https://github.com/pyrmont/testament" "https://github.com/brandonchartier/janet-html"])
+  :dependencies ["https://github.com/pyrmont/testament"
+                 "https://github.com/nate/isatty"])
 
-(declare-executable :name "tup" :entry "translate.janet")
+(declare-executable :name "tup" :entry "translate.janet" :install true)
