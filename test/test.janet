@@ -2,6 +2,7 @@
 (import ../grammar)
 (import ../html)
 
+# TODO: tests are lagging behind example-document.tup. Make a system to sync these
 (def ast-tests
   {"# title\n" [[:header 1 ["title"]]]
    "# title *bold*\n" [[:header 1 ["title " [:bold ["bold"]]]]]
@@ -38,6 +39,7 @@
     (eprintf "Input: %.10M" (string/trim k))
     (assert-equal v (freeze (peg/match grammar/document (string k "\n"))))))
 
+# TODO: use janet-html to construct html (prettier)
 (def html-tests
   {[[:title ["hello"]]] `<title>hello</title><h1>hello</h1>`
    [[:header 1 ["title"]]] "<h1>title</h1>"

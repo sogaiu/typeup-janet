@@ -37,16 +37,16 @@
                 # Styling
                 :styling (choice :image :link :code :italic :bold)
 
-                :bold-wrap (choice "*" "==")
+                :bold-wrap (choice "*")
                 :in-bold (if (to :bold-wrap) :text)
                 :bold (* :bold-wrap (replace :in-bold ,(node :bold)) :bold-wrap)
 
-                :italic-wrap (choice "_" "//")
+                :italic-wrap (choice "_")
                 :in-italic (if (to :italic-wrap) :text)
                 # : not allowed before italic, to prevent URLs from becoming italic
                 :italic (* :italic-wrap (replace :in-italic ,(node :italic)) :italic-wrap)
 
-                :code-wrap (choice "''" "`")
+                :code-wrap (choice "`")
                 :in-code (capture (some (if-not :code-wrap 1)))
                 :code (* :code-wrap (replace :in-code ,(node :code)) :code-wrap)
 
