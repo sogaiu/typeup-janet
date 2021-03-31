@@ -1,10 +1,8 @@
+(use ./util)
 (defn- vpp [& v] (pp v))
 
 (defn- header [hashes & s] [:header (length hashes) s])
 (defn- node [kw] (fn [& s] [kw s]))
-
-(defn map-indexed [f ds]
-  (map f (range 0 (length ds)) ds))
 
 # TODO: do this in PEG
 (defn- link-and-text [inside]
