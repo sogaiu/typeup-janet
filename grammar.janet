@@ -61,7 +61,7 @@
 
                 :hashes (between 1 6 "#")
                 :header (replace (* (capture :hashes) (any " ") :text) ,header)
-                :title (replace (* "=#" (any " ") (capture :chars)) ,(fn [ast] [[:set "title" ast] [:header 1 ast]]))
+                :title (replace (* "=#" (any " ") (capture :chars)) ,(fn [ast] [:set "title" ast]))
 
                 # TODO: styled
                 :quote (replace (* "|" (any " ") (capture :chars)) ,(node :blockquote))
