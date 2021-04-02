@@ -20,7 +20,11 @@
     [:multiline-code ast] (string/format "<pre><code>%s</code></pre>" (renderm ast))
     [:unordered-list items] (string/format "<ul>%s</ul>" (string/join (map (fn [s] (string "<li>" (renderm s) "</li>")) items)))
     [:ordered-list items] (string/format "<ol>%s</ol>" (string/join (map (fn [s] (string "<li>" (renderm s) "</li>")) items)))
-    [:table rows] (string/format "<table><tr>%s</tr>%s</table>" (string/join (map (fn [hcell] (string "<th>" (renderm hcell) "</th>")) (get rows 0))) (string/join (map (fn [row] (string "<tr>" (string/join (map (fn [cell] (string "<td>" (renderm cell) "</td>")) row)) "</tr>")) (array/slice rows 1 -1))))
+    # TODO: Separate this into a function
+    [:table rows] (string/format "<table><tr>%s</tr>%s</table>"
+                                 (string/join (map (fn [hcell] (string "<th>" (renderm hcell) "</th>")) (get rows 0)))
+                                 (string/join (map (fn [row]
+                                                     (string "<tr>" (string/join (map (fn [cell] (string "<td>" (renderm cell) "</td>")) row)) "</tr>")) (array/slice rows 1 -1))))
     [:set k v] ""
     _ (case (type ast)
         :tuple (string/join (map renderm ast))
