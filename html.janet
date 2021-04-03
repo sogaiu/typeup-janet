@@ -2,8 +2,6 @@
   (def- renderm (partial render meta)) # shortcut for rendering with metadata
   (match ast
     [:header n ast] (string/format "<h%d>%s</h%d>" n (renderm ast) n)
-    # TODO: don't style the html in <title>
-    [:title ast] (string/format "<title>%s</title><h1>%s</h1>" (renderm ast) (renderm ast))
     [:bold ast] (string/format "<b>%s</b>" (renderm ast))
     [:italic ast] (string/format "<i>%s</i>" (renderm ast))
     [:break] "<br />"
