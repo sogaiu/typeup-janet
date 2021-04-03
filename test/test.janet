@@ -1,4 +1,4 @@
-(import ./testament/src/testament :prefix "" :exit true)
+(import ./testament :prefix "" :exit true)
 (import ../grammar)
 (import ../html)
 
