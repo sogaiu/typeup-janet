@@ -1,6 +1,8 @@
 (import testament :prefix "" :exit true)
 (import ../grammar)
 (import ../html)
+(import ../meta)
+(import ../prepare)
 
 # TODO: tests are lagging behind example-document.tup. Make a system to sync these
 (def ast-tests
@@ -37,7 +39,7 @@
 (deftest ast
   (eachp [k v] ast-tests
     (eprintf "Input: %.10M" (string/trim k))
-    (assert-equal v (freeze (peg/match grammar/document (string k "\n"))))))
+    (assert-equal v (freeze (peg/match grammar/document (prepare/prepare k))))))
 
 # TODO: use janet-html to construct html (prettier)
 (def html-tests
@@ -55,6 +57,6 @@
 (deftest html
   (eachp [k v] html-tests
     (eprintf "Input: %.10M" k)
-    (assert-equal v (html/render k))))
+    (assert-equal v (html/render (meta/find-meta k) k))))
 
 (run-tests!)
