@@ -15,7 +15,7 @@
    ]
    `
    [[:unordered-list [["foo"] ["bar" [:bold ["bed"]]]]]]
-   `=# hello` [[:title ["hello"]]]
+   `=# hello` [[:set "title" "hello"]]
    `#||{
    header||cells
    foo||bar
