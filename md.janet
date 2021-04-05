@@ -36,7 +36,7 @@
       [:ordered-list items] (string/format "\n\n%s\n\n" (string/join (map-indexed (fn [i s] (string/format "%d. %s\n" (+ 1 i) (renderm s) "\n")) items)))
       [:table rows] (render-table rows)
       [:set k v] ""
-      (error ast))
+      (error (pp ast)))
     (case (type ast)
       :tuple
       (string/join (map renderm ast))
