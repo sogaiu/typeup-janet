@@ -12,7 +12,8 @@
   (def ast (peg/match document (prepare/prepare s)))
   [(meta/find-meta ast) ast])
 
-(defn main [&] (def buf @"")
+(defn main [&]
+  (def buf @"")
   (def fun
     (match (string/split "." (or (get (dyn :args) 1) "html"))
       ["html"] html/render

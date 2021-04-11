@@ -1,3 +1,4 @@
+# Maybe remove :set elements from the AST
 (defn find-meta [ast] (merge ;(filter (fn [x] (not= x nil)) (flatten (map
                         (fn [x]
                           (or (match x
