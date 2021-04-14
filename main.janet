@@ -1,16 +1,12 @@
 #!/bin/janet
 
-(import ./grammar :prefix "")
 (import ./html)
 (import ./md)
 (import ./meta)
 (import ./prepare)
+(import ./lib)
 (import isatty)
 (import json)
-
-(defn parse- [s]
-  (def ast (peg/match document (prepare/prepare s)))
-  [(meta/find-meta ast) ast])
 
 (defn main [&]
   (def buf @"")
@@ -26,4 +22,4 @@
   (if (isatty/isatty? stdin)
     (eprintf "%s: reading from stdin..." (or (dyn :executable) "<unknown executable path>")))
   (file/read stdin :all buf)
-  (print (fun ;(parse- buf))))
+  (print (fun ;(lib/parse- buf))))
