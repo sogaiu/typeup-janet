@@ -77,8 +77,7 @@
                 :header (replace (* (capture :hashes) (any " ") :text) ,header)
                 :title (replace (* "=#" (any " ") (capture :chars)) ,(fn [ast] [:set "title" ast]))
 
-                # TODO: styled
-                :quote (replace (* "|" (any " ") (capture :chars)) ,(node :blockquote))
+                :quote (replace (* "|" (any " ") :text) ,(node :blockquote))
                 # TODO: styled
                 :in-multiline-quote (any (if-not `"""` (* :chars "\n")))
                 :multiline-quote (* "\"\"\"\n" (replace (capture :in-multiline-quote) ,(node :blockquote)) `"""`)
