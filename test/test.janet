@@ -27,4 +27,12 @@ bar`] [[:paragraph ["foo" " " "bar"]]]
               "alt-less image" ["![src]"] (p [[:image "src" ""]])
               "quote" ["| quote"] [[:blockquote ["quote"]]]
               "styled quote" ["| *quote*"] [[:blockquote [[:bold ["quote"]]]]]
+              "multiline quote" [`"""
+quote
+lines
+"""`] [[:blockquote ["quote" " " "lines"]]]
+              "styled multiline quote" [`"""
+quote
+*lines*
+"""`] [[:blockquote ["quote" " " [:bold ["lines"]]]]]
               ])

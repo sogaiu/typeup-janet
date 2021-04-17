@@ -24,15 +24,23 @@
 (defn link [inside]
   [:link ;(link-and-text inside)])
 
+
+(defn- ast-rtrim [ast]
+  (if (= (last ast) " ")
+    (array/slice ast 0 -2)
+    ast))
+
 # remove last element from a paragraph node if it's " ". We don't need a trailing space on paragraphs
 (defn paragraph [& ast]
   [:paragraph
-   (if (= (last ast) " ")
-     (array/slice ast 0 -2)
-     ast)])
+   (ast-rtrim ast)])
+
+(defn multiline-blockquote [& ast]
+  [:blockquote
+   (ast-rtrim ast)])
 
 # needs trailing newline
-# super fecking out of sync with the wip spec ideas
+# TODO: capture only at the highest level
 (def document ~{# preprocessing changes these to always be \n, maybe let it just be \n
                 :nl (+ "\n" "\r" "\r\n")
                 # The basics
@@ -79,13 +87,14 @@
 
                 :quote (replace (* "|" (any " ") :text) ,(node :blockquote))
                 # TODO: styled
-                :in-multiline-quote (any (if-not `"""` (* :chars "\n")))
-                :multiline-quote (* "\"\"\"\n" (replace (capture :in-multiline-quote) ,(node :blockquote)) `"""`)
+                # TODO: handle multiline exactly, quotes like paragraphs, deduplicate
+                :in-multiline-quote (any (if-not `"""` (* :text (replace "\n" " "))))
+                :multiline-quote  (* "\"\"\"\n" (replace :in-multiline-quote ,multiline-blockquote) `"""`)
 
                 :hr (replace (at-least 2 "-") [:break])
 
                 # Styled paragraph into lines
-                # XXX: We need to insert a space after every line, where to do that? 
+                # XXX: is it good to insert implied spaces here? maybe better in renderer
                 :paragraph (replace (some (* :text (replace "\n" " "))) ,paragraph)
 
                 :li (* (choice :list (replace (some (if-not (choice :nl (set "[]{}")) :text)) ,(fn [& x] [;x])) "") :nl)
