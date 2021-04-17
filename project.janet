@@ -3,4 +3,4 @@
                  "https://github.com/nate/isatty"
                  "https://github.com/janet-lang/json"])
 
-(declare-executable :name "typeup" :entry "translate.janet" :install true)
+(declare-executable :name "typeup" :entry "main.janet" :install true)
