@@ -27,10 +27,9 @@
 # remove last element from a paragraph node if it's " ". We don't need a trailing space on paragraphs
 (defn paragraph [& ast]
   [:paragraph
-    (do
-      (if (= (last ast) " ")
-        (array/slice ast 0 -2)
-        ast))])
+   (if (= (last ast) " ")
+     (array/slice ast 0 -2)
+     ast)])
 
 # needs trailing newline
 # super fecking out of sync with the wip spec ideas
