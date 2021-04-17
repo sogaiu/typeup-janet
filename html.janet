@@ -29,4 +29,4 @@
         :array (string/join (map renderm ast))
         :string ast
         # TODO: nice errors
-        (error (string/format "%.10M" ast)))))
+        (error (string/format "Unknown element type: %.10M" ast)))))
