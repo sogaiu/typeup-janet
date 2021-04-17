@@ -1,80 +1,30 @@
-(import ./testlib :prefix "")
+(use ./testlib)
 (import ../grammar)
-(import ../html)
-(import ../meta)
 (import ../prepare)
-(import ../md)
 
-# TODO: tests are lagging behind example-document.tup. Make a system to sync these
-(def ast-tests
-  {"# title\n" [[:header 1 ["title"]]]
-   "# title *bold*\n" [[:header 1 ["title " [:bold ["bold"]]]]]
-   `
-   [
-   foo
-   bar*bed*
-   ]
-   `
-   [[:unordered-list [["foo"] ["bar" [:bold ["bed"]]]]]]
-   `=# hello` [[:set "title" "hello"]]
-   `#||{
-   header||cells
-   foo||bar
-   }
-   ` 
-   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]]
-   `#||{
-   header||cells
-   foo||bar
-   }
-   ` 
-   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]]
-   `#||{
-   header||
-   foo||
-   }
-   ` 
-   [[:table [[["header"]] [["foo"]]]]]
-   })
+(setdyn :on-function-assertv= true)
 
-(deftest ast
-  (eachp [k v] ast-tests
-    (eprintf "Input: %.10M" (string/trim k))
-    (assert-equal v (freeze (peg/match grammar/document (prepare/prepare k))))))
+(defn- p [ast] [[:paragraph ast]])
 
-# TODO: use janet-html to construct html (prettier)
-(def html-tests
-  {[[:title ["hello"]]] `<title>hello</title><h1>hello</h1>`
-   [[:header 1 ["title"]]] "<h1>title</h1>"
-   [[:header 6 ["title"]]] "<h6>title</h6>"
-   [[:header 1 ["a" "b" "c"]]] "<h1>abc</h1>"
-   [[:header 1 ["a" [:bold "b"]]]] "<h1>a<b>b</b></h1>"
-   [[:link "href" "text"]] `<a href="href">text</a>`
-   [[:paragraph "text"]] `<p>text</p>`
-   [[:unordered-list [["foo"] ["bar" [:bold "bed"]]]]] `<ul><li>foo</li><li>bar<b>bed</b></li></ul>`
-   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]] "<table><tr><th>header</th><th>cells</th></tr><tr><td>foo</td><td>bar</td></tr></table>"
-   [:title ["xyz"]] "<title>xyz</title><h1>xyz</h1>"})
-
-(deftest html
-  (eachp [k v] html-tests
-    (eprintf "Input: %.10M" k)
-    (assert-equal v (html/render {} k))))
-
-(def md-tests
-  {[[:title ["hello"]]] `<title>hello</title><h1>hello</h1>`
-   [[:header 1 ["title"]]] "<h1>title</h1>"
-   [[:header 6 ["title"]]] "<h6>title</h6>"
-   [[:header 1 ["a" "b" "c"]]] "<h1>abc</h1>"
-   [[:header 1 ["a" [:bold "b"]]]] "<h1>a<b>b</b></h1>"
-   [[:link "href" "text"]] `<a href="href">text</a>`
-   [[:paragraph "text"]] `<p>text</p>`
-   [[:unordered-list [["foo"] ["bar" [:bold "bed"]]]]] `<ul><li>foo</li><li>bar<b>bed</b></li></ul>`
-   [[:table [[["header"] ["cells"]] [["foo"] ["bar"]]]]] "<table><tr><th>header</th><th>cells</th></tr><tr><td>foo</td><td>bar</td></tr></table>"
-   [:title ["xyz"]] "<title>xyz</title><h1>xyz</h1>"})
-
-(deftest md
-  (eachp [k v] html-tests
-    (eprintf "Input: %.10M" k)
-    (assert-equal v (md/render {} k))))
-
-(run-tests!)
+(on-function |(freeze (peg/match grammar/document (prepare/prepare $0)))
+             ["paragraph" [`foo`] [[:paragraph ["foo"]]]
+              "multiline paragraph" [`foo
+bar`] [[:paragraph ["foo" " " "bar"]]]
+              "title" ["=# title"] [[:set "title" "title"]]
+              "h1" ["# foo"] [[:header 1 ["foo"]]]
+              "h6" ["###### foo"] [[:header 6 ["foo"]]]
+              "styled header" ["# *bold*"] [[:header 1 [[:bold ["bold"]]]]]
+              "bold" ["*bold*"] (p [[:bold ["bold"]]])
+              "italic" ["_italic_"] (p [[:italic ["italic"]]])
+              "code" ["`code`"] (p [[:code ["code"]]])
+              "nested styling" ["*_foo_*"] (p [[:bold [[:italic ["foo"]]]]])
+              "link using spaces" ["[text href]"] (p [[:link "href" "text"]])
+              "link using pipe" ["[text|href]"] (p [[:link "href" "text"]])
+              "textless link" ["[href]"] (p [[:link "href" "href"]])
+              "textless link with pipe" ["[|href]"] (p [[:link "href" "href"]])
+              "styled link text" ["[*bold* href]"] (p [[:link "href" [[:bold "bold"]]]])
+              "image" ["![alt|src]"] (p [[:image "src" "alt"]])
+              "alt-less image" ["![src]"] (p [[:image "src" ""]])
+              "quote" ["| quote"] [[:blockquote ["quote"]]]
+              "styled quote" ["| *quote*"] [[:blockquote [[:bold ["quote"]]]]]
+              ])
