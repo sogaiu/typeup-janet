@@ -24,6 +24,14 @@
 (defn link [inside]
   [:link ;(link-and-text inside)])
 
+# remove last element from a paragraph node if it's " ". We don't need a trailing space on paragraphs
+(defn paragraph [& ast]
+  [:paragraph
+    (do
+      (if (= (last ast) " ")
+        (array/slice ast 0 -2)
+        ast))])
+
 # needs trailing newline
 # super fecking out of sync with the wip spec ideas
 (def document ~{# preprocessing changes these to always be \n, maybe let it just be \n
@@ -80,7 +88,7 @@
 
                 # Styled paragraph into lines
                 # XXX: We need to insert a space after every line, where to do that? 
-                :paragraph (replace (some (* :text (replace "\n" " "))) ,(node :paragraph))
+                :paragraph (replace (some (* :text (replace "\n" " "))) ,paragraph)
 
                 :li (* (choice :list (replace (some (if-not (choice :nl (set "[]{}")) :text)) ,(fn [& x] [;x])) "") :nl)
                 :ul (* "[" (? "\n") (replace (some :li) ,(node :unordered-list)) "]")
