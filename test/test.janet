@@ -1,4 +1,4 @@
-(import testament :prefix "" :exit true)
+(import ./testlib :prefix "")
 (import ../grammar)
 (import ../html)
 (import ../meta)
@@ -58,9 +58,9 @@
 (deftest html
   (eachp [k v] html-tests
     (eprintf "Input: %.10M" k)
-    (assert-equal v (html/render (meta/find-meta k) k))))
+    (assert-equal v (html/render {} k))))
 
-(def html-tests
+(def md-tests
   {[[:title ["hello"]]] `<title>hello</title><h1>hello</h1>`
    [[:header 1 ["title"]]] "<h1>title</h1>"
    [[:header 6 ["title"]]] "<h6>title</h6>"
@@ -75,6 +75,6 @@
 (deftest md
   (eachp [k v] html-tests
     (eprintf "Input: %.10M" k)
-    (assert-equal v (md/render k))))
+    (assert-equal v (md/render {} k))))
 
 (run-tests!)
