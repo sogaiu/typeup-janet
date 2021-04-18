@@ -35,4 +35,33 @@ lines
 quote
 *lines*
 """`] [[:blockquote ["quote" " " [:bold ["lines"]]]]]
-              ])
+              "multiline code" [`===
+code
+lines
+===`] [[:multiline-code ["code\nlines\n"]]]
+              "horizontal rule" ["---"] [[:break]]
+              "1-line metadata" ["@{a = b}"] [[:set "a" "b"]]
+              "multi-line metadata" [`@{
+  a = b
+  c = d
+  }`] [[:set "a" "b"] [:set "c" "d"]]
+              "unordered list" [`[
+a
+b
+c
+]`] [[:unordered-list [["a"] ["b"] ["c"]]]]
+              "ordered list" [`{
+a
+b
+c
+}`] [[:ordered-list [["a"] ["b"] ["c"]]]]
+              "styled unordered list" [`[
+*a*
+b
+]`] [[:unordered-list [[[:bold ["a"]]] ["b"]]]]
+             "empty list items"
+             [`{
+  a
+  
+  b
+  }`] [[:ordered-list [["a"] ["b"]]]]])
