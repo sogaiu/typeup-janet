@@ -113,5 +113,5 @@ x = y
 (on-function
   meta/find-meta
   ["one" [[[:set "x" "y"]]] @{"x" "y"}
-  "many" [[[:set "x" "y"] [:set "a" "b"]]] @{"x" "y" "a" "b"}
-  "precendence - last wins" [[[:set "x" "y"] [:set "x" "z"]]] @{"x" "z"}])
+   "many" [[[:set "x" "y"] [:set "a" "b"]]] @{"x" "y" "a" "b"}
+   "precendence - last wins" [[[:set "x" "y"] [:set "x" "z"]]] @{"x" "z"}])
