@@ -10,7 +10,6 @@
 
 (defmacro assertv= [x y]
   ~(do
-
      (if (deep= ,x ,y)
        (printf "✅  %j == %j" ',x ',y)
        (do

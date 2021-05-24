@@ -60,9 +60,9 @@ c
 *a*
 b
 ]`] [[:unordered-list [[[:bold ["a"]]] ["b"]]]]
-             "empty list items"
-             [`{
+              "empty list items"
+              [`{
   a
-  
+
   b
   }`] [[:ordered-list [["a"] ["b"]]]]])

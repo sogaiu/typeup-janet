@@ -89,7 +89,7 @@
                 # TODO: styled
                 # TODO: handle multiline exactly, quotes like paragraphs, deduplicate
                 :in-multiline-quote (any (if-not `"""` (* :text (replace "\n" " "))))
-                :multiline-quote  (* "\"\"\"\n" (replace :in-multiline-quote ,multiline-blockquote) `"""`)
+                :multiline-quote (* "\"\"\"\n" (replace :in-multiline-quote ,multiline-blockquote) `"""`)
 
                 :hr (replace (at-least 2 "-") [:break])
 
