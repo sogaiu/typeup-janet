@@ -1,6 +1,7 @@
 (use ./testlib)
 (import ../grammar)
 (import ../prepare)
+(import ../meta)
 
 (setdyn :on-function-assertv= true)
 (setdyn :test-show-success false)
@@ -67,37 +68,50 @@ b
 
   b
   }`] [[:ordered-list [["a"] ["b"]]]]
-  "CSV tables" [`#,{
+              "CSV tables" [`#,{
 a,b,c
 d,e,f
 }`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
-  "multicharacter delimited tables" [`#,,{
+              "multicharacter delimited tables" [`#,,{
 a,,b,,c
 d,,e,,f
 }`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
-"1-row tables" [`#,{
+              "1-row tables" [`#,{
 a,b,c
 }`] [[:table [[["a"] ["b"] ["c"]]]]]
-"1-column tables" [`#,{
+              "1-column tables" [`#,{
 a
 b
 c
 }`] [[:table [[["a"]] [["b"]] [["c"]]]]]
-  "whitespace delimited tables" [`# {
+              "whitespace delimited tables" [`# {
 a b c
 d e f
 }`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
-"multi-character whitespace delimited tables" [`#  {
+              "multi-character whitespace delimited tables" [`#  {
 a  b  c
 d  e  f
 }`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
-  "table gaps" [`#,{
+              "table gaps" [`#,{
 a,b,c
 
 d,e,f
 }`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
-"styled text in tables" [`#,{
+              "styled text in tables" [`#,{
 a,b,c
 *_d_*,e,f
 }`] [[:table [[["a"] ["b"] ["c"]] [[:italic [:bold ["d"]]] ["e"] ["f"]]]]]
-  ])
+              "oneline meta block" [`@{x = y}`] [[:set "x" "y"]]
+              "multiline meta block" [`@{
+x = y
+}`] [[:set "x" "y"]]
+              "multiline meta block, multiple keys" [`@{
+a = b
+x = y
+}`] [[:set "a" "b"] [:set "x" "y"]]])
+
+(on-function
+  meta/find-meta
+  ["one" [[[:set "x" "y"]]] @{"x" "y"}
+  "many" [[[:set "x" "y"] [:set "a" "b"]]] @{"x" "y" "a" "b"}
+  "precendence - last wins" [[[:set "x" "y"] [:set "x" "z"]]] @{"x" "z"}])
