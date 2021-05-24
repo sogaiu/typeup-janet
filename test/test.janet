@@ -21,6 +21,7 @@ bar`] [[:paragraph ["foo" " " "bar"]]]
               "nested styling" ["*_foo_*"] (p [[:bold [[:italic ["foo"]]]]])
               "link using spaces" ["[text href]"] (p [[:link "href" "text"]])
               "link using pipe" ["[text|href]"] (p [[:link "href" "text"]])
+              "link not at the start of line" ["a [text href]"] (p [["a"] [:link "href" "text"]])
               "textless link" ["[href]"] (p [[:link "href" "href"]])
               "textless link with pipe" ["[|href]"] (p [[:link "href" "href"]])
               "styled link text" ["[*bold* href]"] (p [[:link "href" [[:bold "bold"]]]])
@@ -65,4 +66,38 @@ b
   a
 
   b
-  }`] [[:ordered-list [["a"] ["b"]]]]])
+  }`] [[:ordered-list [["a"] ["b"]]]]
+  "CSV tables" [`#,{
+a,b,c
+d,e,f
+}`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
+  "multicharacter delimited tables" [`#,,{
+a,,b,,c
+d,,e,,f
+}`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
+"1-row tables" [`#,{
+a,b,c
+}`] [[:table [[["a"] ["b"] ["c"]]]]]
+"1-column tables" [`#,{
+a
+b
+c
+}`] [[:table [[["a"]] [["b"]] [["c"]]]]]
+  "whitespace delimited tables" [`# {
+a b c
+d e f
+}`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
+"multi-character whitespace delimited tables" [`#  {
+a  b  c
+d  e  f
+}`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
+  "table gaps" [`#,{
+a,b,c
+
+d,e,f
+}`] [[:table [[["a"] ["b"] ["c"]] [["d"] ["e"] ["f"]]]]]
+"styled text in tables" [`#,{
+a,b,c
+*_d_*,e,f
+}`] [[:table [[["a"] ["b"] ["c"]] [[:italic [:bold ["d"]]] ["e"] ["f"]]]]]
+  ])
