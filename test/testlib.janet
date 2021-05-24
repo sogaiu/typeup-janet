@@ -43,7 +43,8 @@
 
        (if (deep= expect result)
          (do
-           (printf "%s%s | ✅ %j -> %j == %j" spaces desc ['f ;args] result expect))
+         (if (dyn :test-show-success)
+           (printf "%s%s | ✅ %j -> %j == %j" spaces desc ['f ;args] result expect)))
          (do
            (if (dyn :on-function-assertv=)
              (do

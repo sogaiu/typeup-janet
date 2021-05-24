@@ -3,6 +3,7 @@
 (import ../prepare)
 
 (setdyn :on-function-assertv= true)
+(setdyn :test-show-success false)
 
 (defn- p [ast] [[:paragraph ast]])
 
