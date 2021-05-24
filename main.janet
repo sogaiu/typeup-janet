@@ -13,7 +13,7 @@
   (def fun
     (match (string/split "." (or (get (dyn :args) 1) "html"))
       ["html"] html/render
-      ["ast"] (fn [meta ast] (string/format "%.50M" ast))
+      ["ast"] (fn [meta ast] (string/format "%.99M" ast))
 
       ["md"] md/render
       ["meta" key] (fn [meta ast] (or (get meta key) (errorf "Metadata key not found: %s" key)))
